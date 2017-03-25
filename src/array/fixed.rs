@@ -9,6 +9,7 @@ type Word = u32;
 #[derive(Debug)]
 pub struct Array<T, L> {
     storage: Vec<Word>,
+    len: usize,
     elem_type: PhantomData<T>,
     elem_size: PhantomData<L>,
 }
@@ -39,6 +40,17 @@ impl<T, L> Array<T, L>
     {
         set::<T, L>(&mut self.storage, i, x);
     }
+
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
+    pub fn iter(&self) -> Iter<T, L> {
+        Iter {
+            array: self,
+            index: 0,
+        }
+    }
 }
 
 impl<T, L> From<Vec<T>> for Array<T, L>
@@ -56,11 +68,49 @@ impl<T, L> From<Vec<T>> for Array<T, L>
             set::<T, L>(&mut storage, i, x);
         }
 
-        Array {
+        Self {
             storage: storage,
+            len: len,
             elem_size: PhantomData,
             elem_type: PhantomData,
         }
+    }
+}
+
+pub struct Iter<'a, T, L>
+    where T: 'a,
+          L: 'a
+{
+    array: &'a Array<T, L>,
+    index: usize,
+}
+
+impl<'a, T, L> Iterator for Iter<'a, T, L>
+    where T: Unsigned + From<Word>,
+          L: typenum::Unsigned
+{
+    type Item = T;
+
+    fn next(&mut self) -> Option<T> {
+        if self.index == self.array.len() {
+            None
+        } else {
+            let i = self.index;
+            self.index += 1;
+            Some(self.array.get(i))
+        }
+    }
+}
+
+impl<'a, T, L> IntoIterator for &'a Array<T, L>
+    where T: Unsigned + From<Word>,
+          L: typenum::Unsigned
+{
+    type Item = T;
+    type IntoIter = Iter<'a, T, L>;
+
+    fn into_iter(self) -> Iter<'a, T, L> {
+        self.iter()
     }
 }
 
