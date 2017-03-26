@@ -14,12 +14,10 @@ pub struct Array<T, L> {
     elem_size: PhantomData<L>,
 }
 
-impl<T, L> Array<T, L>
-    where T: Unsigned,
-          L: typenum::Unsigned
-{
+impl<T, L> Array<T, L> {
     pub fn get(&self, i: usize) -> T
-        where T: From<Word>
+        where T: From<Word>,
+              L: typenum::Unsigned
     {
         let l = L::to_usize();
         let j = i * l;
@@ -36,7 +34,8 @@ impl<T, L> Array<T, L>
         }
     }
     pub fn set(&mut self, i: usize, x: T)
-        where T: Into<Word>
+        where T: Into<Word>,
+              L: typenum::Unsigned
     {
         set::<T, L>(&mut self.storage, i, x);
     }
