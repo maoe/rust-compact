@@ -53,11 +53,11 @@ impl<T, L> Array<T, L>
     }
 }
 
-impl<T, L> From<Vec<T>> for Array<T, L>
-    where T: Into<Word>,
+impl<'a, T, L> From<&'a Vec<T>> for Array<T, L>
+    where T: Into<Word> + Copy,
           L: typenum::Unsigned
 {
-    fn from(vec: Vec<T>) -> Array<T, L> {
+    fn from(vec: &Vec<T>) -> Array<T, L> {
         let len = vec.len();
         let l = L::to_usize(); // element size in bits
         let w = mem::size_of::<Word>() * 8; // word size in bits
@@ -65,7 +65,7 @@ impl<T, L> From<Vec<T>> for Array<T, L>
         let mut storage: Vec<Word> = vec![0; capacity];
 
         for (i, x) in vec.into_iter().enumerate() {
-            set::<T, L>(&mut storage, i, x);
+            set::<T, L>(&mut storage, i, x.clone());
         }
 
         Self {
